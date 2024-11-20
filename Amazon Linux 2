@@ -1,0 +1,35 @@
+Cloud.init Code:
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - httpd
+  - php
+  - php-cli
+  - php-mysqlnd
+  - php-json
+  - php-common
+  - php-xml
+  - php-imap
+  - php-mbstring
+  - mariadb
+  - wget
+  - unzip
+
+runcmd:
+  - systemctl start httpd
+  - systemctl enable httpd
+  - cd /var/www/html
+  - wget https://github.com/osTicket/osTicket/releases/download/v1.17.3/osTicket-v1.17.3.zip
+  - unzip osTicket-v1.17.3.zip
+  - mv upload/* .
+  - rm -rf upload osTicket-v1.17.3.zip
+  - chown -R apache:apache /var/www/html
+  - chmod -R 755 /var/www/html
+  - sed -i 's/max_execution_time = 30/max_execution_time = 300/' /etc/php.ini
+  - sed -i 's/memory_limit = 128M/memory_limit = 256M/' /etc/php.ini
+  - sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 20M/' /etc/php.ini
+  - sed -i 's/post_max_size = 8M/post_max_size = 20M/' /etc/php.ini
+  - systemctl restart httpd
+  - echo "osTicket ist bereit. Besuchen Sie: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)/setup/"
+
