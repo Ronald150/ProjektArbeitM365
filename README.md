@@ -60,11 +60,11 @@ terraform apply
 ```
 
 ## 📚 Dokumentation
-- [Installation Guide](INSTALLATION.md)
-- [Testing](TESTING.md)
+- [Installation Guide](docs/INSTALLATION.md)
+- [Testing](docs/TESTING.md)
 - [Architektur](docs/ARCHITECTURE.md)
 - [Wartung](docs/MAINTENANCE.md)
-- [Reflexion](REFLECTION.md)
+- [Reflexion](docs/REFLECTION.md)
 
 ## 📂 Repository-Struktur
 ```
