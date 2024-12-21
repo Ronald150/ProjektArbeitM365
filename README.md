@@ -1,85 +1,90 @@
-# osTicket-Bereitstellung mit AWS
+# osTicket Deployment with AWS
 
-## Überblick
-Dieses Projekt automatisiert die Bereitstellung einer osTicket-Instanz auf AWS mithilfe von Infrastructure as Code (IaC)-Skripten. Es umfasst Setup-Skripte für MySQL, osTicket und Bereinigungstools, um Ressourcen zu entfernen, wenn sie nicht mehr benötigt werden.
+## Übersicht
+Dieses Projekt automatisiert die Bereitstellung einer osTicket-Instanz auf AWS mithilfe von Infrastructure as Code (IaC) Skripten. Es umfasst Setup-Skripte für MySQL, osTicket sowie Bereinigungstools, um Ressourcen nach der Nutzung zu entfernen.
 
 ---
 
 ## Funktionen
-- **Automatisierte Bereitstellung**: Richtet osTicket und eine MySQL-Datenbank auf AWS EC2-Instanzen ein.
-- **AWS-Integration**: Verwendet die AWS CLI zur Erstellung und Verwaltung von Ressourcen.
-- **Individuelle Konfiguration**: Ermöglicht benutzerdefinierte Einstellungen für die Datenbank- und osTicket-Konfiguration.
+- **Automatisierte Bereitstellung**: osTicket und eine MySQL-Datenbank werden automatisch auf AWS EC2-Instanzen bereitgestellt.
+- **AWS CLI Integration**: Verwendet AWS CLI für die Erstellung und Verwaltung von Ressourcen.
+- **Individuelle Konfiguration**: Benutzerdefinierte Einstellungen für Datenbank- und osTicket-Konfigurationen möglich.
 - **Bereinigungstools**: Entfernt alle während der Bereitstellung erstellten AWS-Ressourcen.
 
 ---
 
-## Dateien und Verzeichnisse
+## Projektstruktur
 
-### **Bereitstellungsskripte**
-- **`iac-init.sh`**: Initialisiert die AWS-Umgebung, erstellt Sicherheitsgruppen, startet EC2-Instanzen und richtet osTicket sowie MySQL ein.
-- **`mysql-setup.sh`**: Konfiguriert den MySQL-Server, erstellt die Datenbank und bereitet sie für osTicket vor.
-- **`osticket-setup.sh`**: Installiert und konfiguriert osTicket, einschliesslich der Datenbankverbindung und der Webserver-Einstellungen.
+### Verzeichnis: `scripts/`
+- **[`iac-init.sh`](scripts/iac-init.sh)**: Initialisiert die AWS-Umgebung, erstellt Sicherheitsgruppen, startet EC2-Instanzen und richtet osTicket und MySQL ein.
+- **[`mysql-setup.sh`](scripts/mysql-setup.sh)**: Konfiguriert den MySQL-Server, erstellt die Datenbank und bereitet sie für osTicket vor.
+- **[`osticket-setup.sh`](scripts/osticket-setup.sh)**: Installiert und konfiguriert osTicket, einschließlich Datenbankverbindung und Webserver-Einstellungen.
+- **[`iac-clean.sh`](scripts/iac-clean.sh)**: Bereinigt die Umgebung durch Beenden der Instanzen, Entfernen der Sicherheitsgruppen und Löschen des SSH-Schlüssels.
 
-### **Bereinigungsskript**
-- **`iac-clean.sh`**: Beendet EC2-Instanzen, löscht Sicherheitsgruppen und entfernt das SSH-Schlüsselpaar.
+### Verzeichnis: `terraform/`
+- **[`main.tf`](terraform/main.tf)**: Terraform-Konfiguration für die Bereitstellung der AWS-Ressourcen (optional).
+- **`variables.tf`**: (Optional) Definiert Variablen für Terraform, wie z. B. Region und Instanztypen.
+- **`outputs.tf`**: (Optional) Gibt wichtige Informationen wie die öffentliche IP-Adresse der Instanzen zurück.
 
-### **Vorlagen und Konfigurationen**
-- **`osticket-cloud-init.yml`**: Cloud-Init-Konfiguration zur Automatisierung des osTicket-Setups während des EC2-Instanzstarts.
-- **Terraform-Verzeichnis**: Enthält `main.tf` zur Definition der AWS-Infrastruktur mithilfe von Terraform (optional).
+### Verzeichnis: `docs/`
+- **[`INSTALLATION.md`](docs/INSTALLATION.md)**: Detaillierte Installationsanleitung.
+- **[`TESTING.md`](docs/TESTING.md)**: Hinweise und Anleitungen zum Testen der Bereitstellung.
+- **[`SECURITY_AND_DEVOPS.md`](docs/SECURITY_AND_DEVOPS.md)**: Sicherheits- und DevOps-Best Practices.
+- **[`REFLECTION.md`](docs/REFLECTION.md)**: Projektreflexion und Lessons Learned.
 
 ---
 
 ## Voraussetzungen
-1. **AWS-Konto**: Stellen Sie sicher, dass Sie Zugriff auf ein AWS-Konto haben.
-2. **AWS CLI**: Auf Ihrem lokalen Rechner installiert und konfiguriert.
-3. **Schlüsselpaar**: SSH-Schlüsselpaar für den Zugriff auf EC2-Instanzen.
-4. **Berechtigungen**: IAM-Benutzer mit Berechtigungen für EC2, S3 und VPC.
+1. **AWS Account**: Zugriff auf ein AWS-Konto.
+2. **AWS CLI**: Installiert und konfiguriert auf Ihrem lokalen Rechner.
+3. **SSH Key Pair**: Ein Schlüsselpaar für den Zugriff auf EC2-Instanzen.
+4. **IAM-Berechtigungen**: Benutzer mit Berechtigungen für EC2, S3 und VPC.
 
 ---
 
-## So wird die Bereitstellung durchgeführt
+## Deployment-Schritte
 
-### 1. Klonen Sie das Repository
+### 1. Repository klonen
 ```bash
 git clone https://github.com/your-repository/osTicket-AWS.git
 cd osTicket-AWS
 ```
 
-### 2. Machen Sie die Skripte ausführbar
+### 2. Skripte ausführbar machen
 ```bash
-chmod +x iac-init.sh iac-clean.sh setup/mysql-setup.sh setup/osticket-setup.sh
+chmod +x scripts/iac-init.sh scripts/iac-clean.sh scripts/mysql-setup.sh scripts/osticket-setup.sh
 ```
 
-### 3. Führen Sie das Bereitstellungsskript aus
-Führen Sie das Initialisierungsskript aus, um Ressourcen bereitzustellen und osTicket einzurichten:
+### 3. Deployment starten
+Führen Sie das Initialisierungsskript aus, um die Ressourcen bereitzustellen und osTicket einzurichten:
 ```bash
-./iac-init.sh
+./scripts/iac-init.sh
 ```
 
-### 4. Greifen Sie auf osTicket zu
-Nach der Bereitstellung gibt das Skript die öffentliche IP-Adresse der osTicket-Instanz aus. Verwenden Sie diese, um osTicket in Ihrem Browser aufzurufen.
+### 4. osTicket aufrufen
+Nach der Bereitstellung zeigt das Skript die öffentliche IP-Adresse der osTicket-Instanz an. Verwenden Sie diese, um osTicket im Browser zu öffnen.
 
 ---
 
-## Ressourcen bereinigen
-Um Instanzen zu beenden und AWS-Ressourcen zu entfernen, führen Sie das Bereinigungsskript aus:
+## Bereinigung
+Um alle erstellten AWS-Ressourcen zu entfernen, führen Sie das Bereinigungsskript aus:
 ```bash
-./iac-clean.sh
+./scripts/iac-clean.sh
 ```
 
 ---
 
-## Anpassungen
-- **MySQL-Einstellungen**: Aktualisieren Sie den Datenbanknamen, den Benutzer und das Passwort in `mysql-setup.sh`.
-- **osTicket-Konfiguration**: Passen Sie `osticket-setup.sh` an, um benutzerdefinierte Website-Einstellungen festzulegen.
-- **Terraform**: Verwenden Sie das `terraform`-Verzeichnis für erweiterte IaC-Setups.
+## Anpassung
+- **MySQL-Einstellungen**: Aktualisieren Sie den Datenbanknamen, Benutzer und das Passwort in `mysql-setup.sh`.
+- **osTicket-Konfiguration**: Passen Sie Einstellungen wie den Seitentitel in `osticket-setup.sh` an.
+- **Terraform**: Nutzen Sie das Verzeichnis `terraform` für erweiterte IaC-Setups.
 
 ---
 
 ## Fehlerbehebung
-- **Protokolle**: Überprüfen Sie `/var/log/user-data.log` auf den EC2-Instanzen, um Setup-Fehler zu analysieren.
-- **AWS CLI-Fehler**: Stellen Sie sicher, dass die CLI korrekt mit gültigen Anmeldeinformationen konfiguriert ist.
-- **Berechtigungen**: Überprüfen Sie IAM-Berechtigungen, wenn Ressourcen nicht erstellt werden können.
+- **Logs**: Prüfen Sie `/var/log/user-data.log` auf den EC2-Instanzen bei Setup-Fehlern.
+- **AWS CLI-Fehler**: Stellen Sie sicher, dass AWS CLI korrekt konfiguriert ist.
+- **Berechtigungen**: Überprüfen Sie die IAM-Berechtigungen, wenn Ressourcen nicht erstellt werden können.
 
 ---
 
@@ -91,5 +96,5 @@ Um Instanzen zu beenden und AWS-Ressourcen zu entfernen, führen Sie das Bereini
 ---
 
 ## Lizenz
-Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe `LICENSE.md` für Details.
+Dieses Projekt steht unter der MIT-Lizenz. Weitere Informationen finden Sie in der Datei [`LICENSE.md`](LICENSE.md).
 
