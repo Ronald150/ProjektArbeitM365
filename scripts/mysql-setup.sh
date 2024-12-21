@@ -1,58 +1,45 @@
 #!/bin/bash
 
 # Aktivieren des Loggings
-# Protokolliert alle Befehle und Ausgaben in eine Log-Datei zur Fehleranalyse
+# Alle Ausgaben werden in eine Log-Datei geschrieben, um Debugging zu erleichtern
 set -e
 exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
 
 # Farben initialisieren
-# Farben für die Skriptausgabe zur besseren Lesbarkeit definieren
+# Diese Farben werden verwendet, um die Ausgaben im Terminal besser sichtbar zu machen
 YELLOW="\033[33m"
 RED="\033[31m"
 GREEN="\033[32m"
 COLOR_END="\033[0m"
 
 # MySQL-Installation und Konfiguration
-# Installiert MySQL-Server, um die osTicket-Datenbank zu hosten
 echo -e "$YELLOW[i]$COLOR_END Update und Installation von MySQL..."
-# Aktualisieren der Paketlisten und Installation des MySQL-Servers
+# Aktualisieren der Paketliste und Installieren des MySQL-Servers
 apt-get update
 apt-get install -y mysql-server
 
 # MySQL-Datenbank und Benutzer erstellen
-# Definiert die Datenbank, den Benutzer und das Passwort für osTicket
-DB_NAME="osticket"
-DB_USER="osticket_user"
-DB_PASSWORD="sicheres_passwort"
+# Name der Datenbank, Benutzer und Passwort festlegen
+DB_NAME="osticket_db"   # Der Name der Datenbank, die für osTicket verwendet wird
+DB_USER="ost_user"     # Der Benutzername für die Verbindung zur MySQL-Datenbank
+DB_PASSWORD="mY_v3ry_$3cur3_p@ssw0rd!" # Sicheres Passwort für den Benutzer
 
-# Erstellt die MySQL-Datenbank und den Benutzer mit den definierten Berechtigungen
-echo -e "$YELLOW[i]$COLOR_END Erstelle MySQL-Datenbank und Benutzer..."
-# Erstellt die Datenbank für osTicket
-mysql -e "CREATE DATABASE $DB_NAME;"
-# Erstellt einen Benutzer mit dem definierten Passwort und gewährt Zugriff
-mysql -e "CREATE USER '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';"
-# Erteilt dem Benutzer vollständige Rechte auf der neuen Datenbank
-mysql -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%';"
-# Aktualisiert die Berechtigungen in MySQL
-mysql -e "FLUSH PRIVILEGES;"
+# Erstellen der MySQL-Datenbank und des Benutzers mit entsprechenden Berechtigungen
+echo -e "$YELLOW[i]$COLOR_END Erstelle Datenbank und Benutzer..."
+mysql -e "CREATE DATABASE $DB_NAME;"  # Datenbank erstellen
+mysql -e "CREATE USER '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';"  # Benutzer mit Passwort erstellen
+mysql -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%';"  # Alle Rechte für die Datenbank gewähren
+mysql -e "FLUSH PRIVILEGES;"  # Berechtigungen aktualisieren
 
-# MySQL Root-Passwort setzen
-# Sichert den Root-Zugang durch Festlegen eines starken Passworts
+# Root-Passwort für MySQL festlegen
+# Standardmässig hat der Root-Benutzer kein Passwort. Dies wird hier gesetzt.
 echo -e "$YELLOW[i]$COLOR_END Setze MySQL Root-Passwort..."
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root_sicheres_passwort';"
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'r00t_v3ry_$3cur3!';"  # Sicheres Passwort für Root-Benutzer setzen
 
 # MySQL für externe Verbindungen konfigurieren
-# Ermöglicht Verbindungen von externen Hosts durch Ändern der MySQL-Konfigurationsdatei
-echo -e "$YELLOW[i]$COLOR_END MySQL für externe Verbindungen konfigurieren..."
-# Ändert die Einstellung "bind-address", damit MySQL auf allen IP-Adressen lauscht
-sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
+# Standardmässig erlaubt MySQL keine externen Verbindungen. Diese werden hier aktiviert.
+echo -e "$YELLOW[i]$COLOR_END Konfiguriere MySQL für externe Verbindungen..."
+sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf  # MySQL so konfigurieren, dass es Verbindungen von überall akzeptiert
+systemctl restart mysql  # MySQL-Dienst neu starten, um Änderungen zu übernehmen
 
-# Startet den MySQL-Dienst neu, um die Konfigurationsänderungen zu übernehmen
-echo -e "$YELLOW[i]$COLOR_END MySQL-Dienst wird neu gestartet..."
-systemctl restart mysql
-
-# Abschlussnachricht anzeigen
-echo -e "$GREEN[+]$COLOR_END MySQL-Setup abgeschlossen."
-
-# Hinweis für den Benutzer
-echo -e "$YELLOW[!]$COLOR_END Bitte überprüfen Sie, ob die MySQL-Datenbank korrekt läuft und von extern erreichbar ist."
+echo -e "$GREEN[+]$COLOR_END MySQL-Setup abgeschlossen."  # Erfolgsnachricht ausgeben
