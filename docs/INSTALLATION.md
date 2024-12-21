@@ -12,26 +12,36 @@ Diese Anleitung beschreibt, wie Sie das AWS CLI im AWS Academy Learner Lab start
 
 1. Melden Sie sich auf der AWS Academy-Plattform an.
 2. Navigieren Sie zum Dashboard Ihres Kurses, z. B. "AWS Academy Learner Lab [90559]" (siehe Bild 1).
+![image1](https://github.com/user-attachments/assets/251d7847-3d0f-4fbe-afd8-fe43fb070310)
+
 
 ### 2. Auswahl des Kurses
 
 1. Klicken Sie in der Kursübersicht auf "AWS Academy Learner Lab [90559]" (siehe Bild 2).
 2. Die Module und Lerninhalte des Kurses werden angezeigt.
+![image2](https://github.com/user-attachments/assets/9288e15e-6c3e-4319-b7bd-b400095e69cb)
+
 
 ### 3. Module aufrufen
 
 1. Klicken Sie im linken Menü auf "Modules" (siehe Bild 3).
 2. Wählen Sie das Modul "Launch AWS Academy Learner Lab" aus.
+![image3](https://github.com/user-attachments/assets/e1d86555-7776-4660-b9d7-89610f30c076)
+
 
 ### 4. Starten des AWS Academy Learner Lab
 
 1. Finden Sie das Modul "Launch AWS Academy Learner Lab" und klicken Sie darauf (siehe Bild 4).
 2. Die Lab-Umgebung wird in einem Terminal-Fenster geöffnet.
+![image4](https://github.com/user-attachments/assets/24a7b968-0c37-413f-8dd5-be4af12a92a7)
+
 
 ### 5. Navigieren in der Lab-Umgebung
 
 1. Nach dem Start sehen Sie ein Terminal mit einer funktionierenden AWS CLI-Installation (siehe Bild 5).
 2. Zusätzliche Dokumentationen und Ressourcen sind auf der rechten Seite einsehbar.
+![image5](https://github.com/user-attachments/assets/5c2a56aa-38e0-48e4-9067-8ec407722722)
+
 
 ### 6. AWS CLI verwenden
 
