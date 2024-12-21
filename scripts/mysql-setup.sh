@@ -12,30 +12,6 @@ RED="\033[31m"
 GREEN="\033[32m"
 COLOR_END="\033[0m"
 
-# Sicherheitsgruppen erstellen oder überprüfen
-# MySQL Sicherheitsgruppe
-MYSQL_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=mysql-sg" --query "SecurityGroups[*].GroupId" --output text)
-if [ -z "$MYSQL_SG_ID" ]; then
-  MYSQL_SG_ID=$(aws ec2 create-security-group --group-name "mysql-sg" --description "Sicherheitsgruppe für MySQL" --output text)
-  echo -e "$GREEN[+]$COLOR_END MySQL Sicherheitsgruppe erstellt: $MYSQL_SG_ID"
-  aws ec2 authorize-security-group-ingress --group-id $MYSQL_SG_ID --protocol tcp --port 3306 --cidr 0.0.0.0/0
-  aws ec2 authorize-security-group-ingress --group-id $MYSQL_SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
-else
-  echo -e "$YELLOW[i]$COLOR_END MySQL Sicherheitsgruppe existiert bereits: $MYSQL_SG_ID"
-fi
-
-# osTicket Sicherheitsgruppe
-OSTICKET_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=osticket-sg" --query "SecurityGroups[*].GroupId" --output text)
-if [ -z "$OSTICKET_SG_ID" ]; then
-  OSTICKET_SG_ID=$(aws ec2 create-security-group --group-name "osticket-sg" --description "Sicherheitsgruppe für osTicket" --output text)
-  echo -e "$GREEN[+]$COLOR_END osTicket Sicherheitsgruppe erstellt: $OSTICKET_SG_ID"
-  aws ec2 authorize-security-group-ingress --group-id $OSTICKET_SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
-  aws ec2 authorize-security-group-ingress --group-id $OSTICKET_SG_ID --protocol tcp --port 443 --cidr 0.0.0.0/0
-  aws ec2 authorize-security-group-ingress --group-id $OSTICKET_SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
-else
-  echo -e "$YELLOW[i]$COLOR_END osTicket Sicherheitsgruppe existiert bereits: $OSTICKET_SG_ID"
-fi
-
 # MySQL-Installation und Konfiguration
 echo -e "$YELLOW[i]$COLOR_END Update und Installation von MySQL..."
 # Aktualisieren der Paketliste und Installieren des MySQL-Servers
