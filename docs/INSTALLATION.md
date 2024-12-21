@@ -90,8 +90,8 @@ Das `iac-init.sh`-Skript überprüft bereits, ob AWS CLI installiert ist. Falls 
    - Navigieren Sie zu Ihrem Home-Verzeichnis und erstellen Sie einen Ordner `.aws`:
      ```bash
      cd ~
-     mkdir aws
-     cd aws
+     mkdir .aws
+     cd .aws
      ```
 
       ![WSL_Showcase](https://github.com/user-attachments/assets/4b4d4e11-494a-4f6d-a75b-7137c284dd15)
