@@ -12,6 +12,30 @@ RED="\033[31m"
 GREEN="\033[32m"
 COLOR_END="\033[0m"
 
+# Sicherheitsgruppen erstellen oder wiederverwenden
+# MySQL Sicherheitsgruppe
+MYSQL_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=mysql-sg" --query "SecurityGroups[*].GroupId" --output text)
+if [ -z "$MYSQL_SG_ID" ]; then
+  MYSQL_SG_ID=$(aws ec2 create-security-group --group-name "mysql-sg" --description "Sicherheitsgruppe für MySQL" --output text)
+  echo -e "$GREEN[+]$COLOR_END MySQL Sicherheitsgruppe erstellt: $MYSQL_SG_ID"
+  aws ec2 authorize-security-group-ingress --group-id $MYSQL_SG_ID --protocol tcp --port 3306 --cidr 0.0.0.0/0
+  aws ec2 authorize-security-group-ingress --group-id $MYSQL_SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
+else
+  echo -e "$YELLOW[i]$COLOR_END MySQL Sicherheitsgruppe existiert bereits: $MYSQL_SG_ID"
+fi
+
+# osTicket Sicherheitsgruppe
+OSTICKET_SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=osticket-sg" --query "SecurityGroups[*].GroupId" --output text)
+if [ -z "$OSTICKET_SG_ID" ]; then
+  OSTICKET_SG_ID=$(aws ec2 create-security-group --group-name "osticket-sg" --description "Sicherheitsgruppe für osTicket" --output text)
+  echo -e "$GREEN[+]$COLOR_END osTicket Sicherheitsgruppe erstellt: $OSTICKET_SG_ID"
+  aws ec2 authorize-security-group-ingress --group-id $OSTICKET_SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
+  aws ec2 authorize-security-group-ingress --group-id $OSTICKET_SG_ID --protocol tcp --port 443 --cidr 0.0.0.0/0
+  aws ec2 authorize-security-group-ingress --group-id $OSTICKET_SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
+else
+  echo -e "$YELLOW[i]$COLOR_END osTicket Sicherheitsgruppe existiert bereits: $OSTICKET_SG_ID"
+fi
+
 # MySQL-Installation und Konfiguration
 echo -e "$YELLOW[i]$COLOR_END Update und Installation von MySQL..."
 # Aktualisieren der Paketliste und Installieren des MySQL-Servers
@@ -50,3 +74,27 @@ sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld
 systemctl restart mysql  # MySQL-Dienst neu starten, um Änderungen zu übernehmen
 
 echo -e "$GREEN[+]$COLOR_END MySQL-Setup abgeschlossen."  # Erfolgsnachricht ausgeben
+
+# osTicket installieren und konfigurieren
+echo -e "$YELLOW[i]$COLOR_END Installiere Webserver und osTicket..."
+apt-get install -y apache2 php libapache2-mod-php php-mysql unzip wget
+
+# osTicket herunterladen und konfigurieren
+cd /var/www/html
+wget https://github.com/osTicket/osTicket/releases/download/v1.18.1/osTicket-v1.18.1.zip -O osticket.zip
+unzip osticket.zip
+mv upload/* .  # Verschiebe die entpackten Dateien in das Webserver-Verzeichnis
+rm -rf upload osticket.zip  # Bereinigung der temporären Dateien
+cp include/ost-sampleconfig.php include/ost-config.php
+chmod 0666 include/ost-config.php  # Schreibrechte für die Konfigurationsdatei
+
+# osTicket-Datenbank konfigurieren
+echo -e "$YELLOW[i]$COLOR_END Konfiguriere osTicket-Datenbank..."
+sed -i "s/'DBNAME', '.*'/'DBNAME', '$DB_NAME'/" include/ost-config.php
+sed -i "s/'DBUSER', '.*'/'DBUSER', '$DB_USER'/" include/ost-config.php
+sed -i "s/'DBPASS', '.*'/'DBPASS', '$DB_PASSWORD'/" include/ost-config.php
+
+# Apache-Webserver neu starten
+systemctl restart apache2
+
+echo -e "$GREEN[+]$COLOR_END osTicket wurde erfolgreich installiert."  # Erfolgsnachricht ausgeben
