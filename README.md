@@ -1,159 +1,95 @@
-# osTicket Cloud Projekt
-*Cloud-Init basiertes osTicket Deployment auf AWS Free Tier*
+# osTicket Deployment with AWS
 
-## 👥 Team
-| Name | Rolle | Aufgaben |
-|------|-------|----------|
-| Ronald | Infrastructure | - EC2 & Cloud-Init<br>- MySQL lokale DB |
-| Milan | Documentation & QA | - Dokumentation<br>- Testing |
-| Gian Luca | Security & DevOps | - Security<br>- Backup & Recovery |
+## Overview
+This project automates the deployment of an osTicket instance on AWS using Infrastructure as Code (IaC) scripts. It includes setup scripts for MySQL, osTicket, and cleanup tools to remove resources when they are no longer needed.
 
-## 🏗️ Architektur
-```mermaid
-graph TD
-    A[Internet] -->|HTTP/HTTPS| B[Security Group]
-    B --> C[EC2 Instance t2.micro]
-    subgraph EC2 Instance
-        C --> D[Apache2]
-        D --> E[PHP 7.4+]
-        E --> F[osTicket]
-        F --> G[Local MySQL]
-    end
-    H[Admin] -->|SSH| B
-    I[MySQL Workbench] -->|Port 3306| B
-```
+---
 
-## 📦 Komponenten
-| Software | Version | Zweck |
-|----------|---------|-------|
-| EC2 | t2.micro | AWS Free Tier Server |
-| Ubuntu | 22.04 LTS | Betriebssystem |
-| Apache | 2.4 | Webserver |
-| MySQL | 8.0 | Lokale Datenbank |
-| PHP | 7.4+ | Programmiersprache |
-| osTicket | 1.17.3 | Ticketsystem |
+## Features
+- **Automated Deployment**: Sets up osTicket and a MySQL database on AWS EC2 instances.
+- **AWS Integration**: Utilizes AWS CLI for resource creation and management.
+- **Custom Configuration**: Allows user-defined settings for database and osTicket configurations.
+- **Cleanup Tools**: Removes all AWS resources created during deployment.
 
-## 📋 Dokumentation
+---
 
-Detaillierte Informationen finden Sie in:
-- [Installation](docs/INSTALLATION.md)
-- [Architektur](docs/ARCHITECTURE.md)
-- [Testing](docs/TESTING.md)
-- [Security & DevOps](docs/SECURITY_AND_DEVOPS.md)
-- [Team Reflexion](docs/REFLECTION.md)
+## Files and Directories
 
-## ⚡️ Quick Start
+### **Deployment Scripts**
+- **`iac-init.sh`**: Initializes the AWS environment, creates security groups, launches EC2 instances, and sets up osTicket and MySQL.
+- **`mysql-setup.sh`**: Configures the MySQL server, creates the database, and prepares it for osTicket.
+- **`osticket-setup.sh`**: Installs and configures osTicket, including database connection and web server setup.
+
+### **Cleanup Script**
+- **`iac-clean.sh`**: Terminates EC2 instances, deletes security groups, and removes the SSH key pair.
+
+### **Templates and Configurations**
+- **`osticket-cloud-init.yml`**: Cloud-init configuration for automating osTicket setup during EC2 instance launch.
+- **Terraform Directory**: Contains `main.tf` for defining AWS infrastructure using Terraform (optional).
+
+---
+
+## Prerequisites
+1. **AWS Account**: Ensure you have access to an AWS account.
+2. **AWS CLI**: Installed and configured on your local machine.
+3. **Key Pair**: SSH key pair to access EC2 instances.
+4. **Permissions**: IAM user with permissions for EC2, S3, and VPC.
+
+---
+
+## How to Deploy
+
+### 1. Clone the Repository
 ```bash
-# AWS EC2 Instance mit Cloud-Init erstellen
-aws ec2 run-instances \
-    --image-id ami-0a0e54d9d74e08f00 \    # Ubuntu 22.04 LTS
-    --instance-type t2.micro \             # Free Tier
-    --key-name your-key \
-    --security-group-ids sg-xxxx \
-    --user-data file://cloud-init.yml
+git clone https://github.com/your-repository/osTicket-AWS.git
+cd osTicket-AWS
 ```
 
-## 🔧 Cloud-Init Konfiguration
-```yaml
-#cloud-config
-package_update: true
-package_upgrade: true
-
-packages:
-  - apache2
-  - php
-  - php-mysql
-  - mysql-server
-  - php-imap
-  - php-mbstring
-  - unzip
-
-write_files:
-  - path: /tmp/install_osticket.sh
-    permissions: '0755'
-    content: |
-      #!/bin/bash
-      # MySQL Setup
-      mysql -u root <<EOF
-      CREATE DATABASE osticket;
-      CREATE USER 'osticket'@'localhost' IDENTIFIED BY 'your-password';
-      GRANT ALL PRIVILEGES ON osticket.* TO 'osticket'@'localhost';
-      FLUSH PRIVILEGES;
-      EOF
-      
-      # osTicket Installation
-      cd /tmp
-      wget https://github.com/osTicket/osTicket/releases/download/v1.17.3/osTicket-v1.17.3.zip
-      unzip osTicket-v1.17.3.zip -d /var/www/html/
-      chown -R www-data:www-data /var/www/html/osTicket
-
-runcmd:
-  - bash /tmp/install_osticket.sh
-```
-
-## 🔒 Security Ports
-| Port | Protokoll | Zweck |
-|------|-----------|-------|
-| 80 | TCP | HTTP |
-| 443 | TCP | HTTPS |
-| 22 | TCP | SSH |
-| 3306 | TCP | MySQL |
-
-## 💾 Backup
+### 2. Make Scripts Executable
 ```bash
-# Datenbank Backup
-mysqldump -u root osticket > backup.sql
-
-# Filesystem Backup
-tar -czf osticket_files.tar.gz /var/www/html/osTicket
+chmod +x iac-init.sh iac-clean.sh setup/mysql-setup.sh setup/osticket-setup.sh
 ```
 
-## ❗ Wichtige Befehle
+### 3. Run the Deployment Script
+Execute the initialization script to deploy resources and set up osTicket:
 ```bash
-# Apache Status
-sudo systemctl status apache2
-
-# MySQL Status
-sudo systemctl status mysql
-
-# Logs prüfen
-sudo tail -f /var/log/apache2/error.log
-sudo tail -f /var/log/mysql/error.log
+./iac-init.sh
 ```
 
-## 📊 System Anforderungen
-- AWS Free Tier Account
-- t2.micro (1 vCPU, 1GB RAM)
-- 8GB+ Speicherplatz
-- Internet Verbindung
+### 4. Access osTicket
+After deployment, the script will provide the public IP address of the osTicket instance. Use this to access osTicket in your browser.
 
-## 🚨 Troubleshooting
-1. **Apache startet nicht**
-   ```bash
-   sudo systemctl status apache2
-   sudo tail -f /var/log/apache2/error.log
-   ```
+---
 
-2. **MySQL Verbindungsprobleme**
-   ```bash
-   sudo systemctl status mysql
-   sudo tail -f /var/log/mysql/error.log
-   ```
+## Cleanup Resources
+To terminate instances and remove AWS resources, run the cleanup script:
+```bash
+./iac-clean.sh
+```
 
-3. **PHP Fehler**
-   ```bash
-   sudo tail -f /var/log/apache2/error.log
-   php -v
-   ```
+---
 
-## 🔍 Monitoring
-- System Logs
-- Apache Status
-- MySQL Status
-- Disk Space
-- Memory Usage
+## Customization
+- **MySQL Settings**: Update database name, user, and password in `mysql-setup.sh`.
+- **osTicket Configuration**: Modify `osticket-setup.sh` to set custom site settings.
+- **Terraform**: Use the `terraform` directory for advanced IaC setups.
 
-## 📝 Lizenz
-Schulprojekt GBS St. Gallen, M365
+---
 
-[SCREENSHOT PLATZHALTER: Fertige Installation]
+## Troubleshooting
+- **Logs**: Check `/var/log/user-data.log` on the EC2 instances for setup errors.
+- **AWS CLI Errors**: Ensure the CLI is correctly configured with valid credentials.
+- **Permissions**: Verify IAM permissions if resources fail to create.
+
+---
+
+## Contributors
+- **Ronald Klauser**
+- **Gian Luca Hörler**
+- **Milan Fenner**
+
+---
+
+## License
+This project is licensed under the MIT License. See `LICENSE.md` for details.
+
