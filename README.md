@@ -21,10 +21,6 @@ Dieses Projekt automatisiert die Bereitstellung einer osTicket-Instanz auf AWS m
 - **[`osticket-setup.sh`](scripts/osticket-setup.sh)**: Installiert und konfiguriert osTicket, einschließlich Datenbankverbindung und Webserver-Einstellungen.
 - **[`iac-clean.sh`](scripts/iac-clean.sh)**: Bereinigt die Umgebung durch Beenden der Instanzen, Entfernen der Sicherheitsgruppen und Löschen des SSH-Schlüssels.
 
-### Verzeichnis: `terraform/`
-- **[`main.tf`](terraform/main.tf)**: Terraform-Konfiguration für die Bereitstellung der AWS-Ressourcen (optional).
-- **`variables.tf`**: (Optional) Definiert Variablen für Terraform, wie z. B. Region und Instanztypen.
-- **`outputs.tf`**: (Optional) Gibt wichtige Informationen wie die öffentliche IP-Adresse der Instanzen zurück.
 
 ### Verzeichnis: `docs/`
 - **[`INSTALLATION.md`](docs/INSTALLATION.md)**: Detaillierte Installationsanleitung.
